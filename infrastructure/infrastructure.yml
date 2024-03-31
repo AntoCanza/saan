@@ -1,0 +1,50 @@
+﻿version: '3.8'
+
+services:
+  bab-sqlserver-db:
+    image: mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04
+    container_name: sqlserver
+    hostname: sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "<YourStrong@Passw0rd>"
+    ports:
+      - "1433:1433"
+    volumes:
+      - bab_sqlserver_data:/var/opt/mssql:rw
+    networks:
+      - bab-network
+  
+  bab-web:
+    image: antoniocanza/breeders-and-breeds.web
+    container_name: breeders-and-breeds.web
+    hostname: breeders-and-breeds.web
+    environment:
+      TZ: "Europe/Berlin"
+      ASPNETCORE_URLS: "https://+:443"
+      ASPNETCORE_HTTPS_PORT: "443"
+      Kestrel__Certificates__Default__Path: "/mnt/cert/certificate.pfx"
+      Kestrel__Certificates__Default__Password: "certificate"
+    restart: on-failure
+    ports:
+      - "443:443"
+    volumes:
+      - ./cert:/mnt/cert:ro
+    healthcheck:
+      test: [ "CMD", "wget", "-O ready", "http://localhost:5090/health/ready" ]
+      interval: 1s
+      timeout: 3s
+      retries: 15
+    build:
+      context: ../
+      dockerfile: src/BreedersAndBreeds/BreedersAndBreeds.Web/Dockerfile
+    networks:
+      - bab-network
+
+volumes:
+  bab_sqlserver_data:
+    driver: local
+
+networks:
+  bab-network:
+    driver: bridge
