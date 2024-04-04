@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using SaAn.Domain;
+using SaAn.Infrastructure;
 using SaAn.Web.Blazor.Components;
 using SaAn.Web.Blazor.Components.Account;
-using SaAn.Web.Blazor.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +25,8 @@ builder.Services.AddAuthentication(options =>
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+builder.Services.AddInfrastructure(connectionString);
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
