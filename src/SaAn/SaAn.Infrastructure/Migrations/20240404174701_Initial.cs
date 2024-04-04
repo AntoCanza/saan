@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using SaAn.Domain.Enums;
 
 #nullable disable
 
@@ -12,6 +13,9 @@ namespace SaAn.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:Enum:vehicle_type", "bike,e_bike,scooter");
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -49,6 +53,57 @@ namespace SaAn.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreationDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    CreationTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    UpdatedDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    UpdatedTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Manufacturers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ContactInfo = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    CreationDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    CreationTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    UpdatedDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    UpdatedTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Manufacturers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Vehicles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Model = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    Brand = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    VehicleType = table.Column<VehicleType>(type: "vehicle_type", nullable: false),
+                    CreationDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    CreationTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    UpdatedDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    UpdatedTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Vehicles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -157,6 +212,62 @@ namespace SaAn.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "SpareParts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    PartNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ManufacturerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreationDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    CreationTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    UpdatedDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    UpdatedTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SpareParts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SpareParts_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SpareParts_Manufacturers_ManufacturerId",
+                        column: x => x.ManufacturerId,
+                        principalTable: "Manufacturers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VehicleSpareParts",
+                columns: table => new
+                {
+                    VehicleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SparePartId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VehicleSpareParts", x => new { x.VehicleId, x.SparePartId });
+                    table.ForeignKey(
+                        name: "FK_VehicleSpareParts_SpareParts_SparePartId",
+                        column: x => x.SparePartId,
+                        principalTable: "SpareParts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_VehicleSpareParts_Vehicles_VehicleId",
+                        column: x => x.VehicleId,
+                        principalTable: "Vehicles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -193,6 +304,21 @@ namespace SaAn.Infrastructure.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SpareParts_CategoryId",
+                table: "SpareParts",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SpareParts_ManufacturerId",
+                table: "SpareParts",
+                column: "ManufacturerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VehicleSpareParts_SparePartId",
+                table: "VehicleSpareParts",
+                column: "SparePartId");
         }
 
         /// <inheritdoc />
@@ -214,10 +340,25 @@ namespace SaAn.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "VehicleSpareParts");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "SpareParts");
+
+            migrationBuilder.DropTable(
+                name: "Vehicles");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "Manufacturers");
         }
     }
 }

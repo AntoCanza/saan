@@ -1,0 +1,60 @@
+﻿@page "/vehicles"
+@rendermode InteractiveServer
+@using SaAn.Domain.Entities
+@using SaAn.Infrastructure.Services
+@inject VehicleService VehicleService
+
+<h3>Vehicles</h3>
+
+<div style="display: flex;">
+    <div style="flex: 1; padding-right: 20px;">
+        <h4>Vehicles</h4>
+        @if (vehicles == null)
+        {
+            <p>
+                <em>Loading...</em>
+            </p>
+        }
+        else
+        {
+            @foreach (var vehicle in vehicles)
+            {
+                <button @onclick="() => SelectVehicle(vehicle)" style="width: 100%; text-align: left;">
+                    @vehicle.Model (@vehicle.Brand)
+                </button>
+            }
+        }
+    </div>
+    <div style="flex: 2;">
+        <h4>Spare Parts</h4>
+        @if (selectedVehicle != null)
+        {
+            <ul>
+                @foreach (var sparePart in selectedVehicle.VehicleSpareParts.Select(vsp => vsp.SparePart))
+                {
+                    <li>@sparePart.Name - @sparePart.Description</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Select a vehicle to see spare parts.</p>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Vehicle>? vehicles;
+    private Vehicle? selectedVehicle;
+
+    protected override async Task OnInitializedAsync()
+    {
+        vehicles = await VehicleService.GetVehicles();
+    }
+
+    private void SelectVehicle(Vehicle vehicle)
+    {
+        selectedVehicle = vehicle;
+    }
+
+}

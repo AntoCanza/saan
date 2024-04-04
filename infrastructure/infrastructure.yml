@@ -1,12 +1,11 @@
 ﻿services:
   saan.db:
     image: postgis/postgis:16-3.4-alpine
-    container_name: saan.db
+    container_name: saan.db.antoniocnz.com
     #command: -c shared_buffers=256MB -c max_connections=105 -c log_statement=all -c log_destination=stderr
     command: -c shared_buffers=256MB -c max_connections=105
     environment:
       POSTGRES_USER: saan_user
-      
       POSTGRES_PASSWORD: saan
       POSTGRES_DB: saan
       PGPORT: 5432
@@ -14,6 +13,33 @@
       - "54322:5432"
     volumes:
       - saan.db.data:/var/lib/postgresql/data
+    networks:
+      - antoniocnz-network
+
+  saan.web:
+    image: antoniocanza/saan.web
+    container_name: saan.web.antoniocnz.com
+    restart: on-failure
+    depends_on:
+      - saan.db
+    environment:
+      TZ: "Europe/Berlin"
+      ASPNETCORE_URLS: "https://+:5002"
+      ASPNETCORE_HTTPS_PORT: "5002"
+      Kestrel__Certificates__Default__Path: "/mnt/cert/certificate.pfx"
+      Kestrel__Certificates__Default__Password: "certificate"
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./cert:/mnt/cert:ro
+    healthcheck:
+      test: [ "CMD", "wget", "-O ready", "https://localhost" ]
+      interval: 1s
+      timeout: 3s
+      retries: 15
+    build:
+      context: ../
+      dockerfile: src/SaAn/SaAn.Web.Blazor/Dockerfile
     networks:
       - antoniocnz-network
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using SaAn.Domain.Enums;
 using SaAn.Infrastructure;
 
 #nullable disable
@@ -12,7 +13,7 @@ using SaAn.Infrastructure;
 namespace SaAn.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240404162313_Initial")]
+    [Migration("20240404174701_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -23,6 +24,7 @@ namespace SaAn.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "8.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "vehicle_type", new[] { "bike", "e_bike", "scooter" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -221,6 +223,166 @@ namespace SaAn.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("SaAn.Domain.Entities.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("CreationDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("CreationTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateOnly?>("UpdatedDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("UpdatedTime")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories", (string)null);
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.Manufacturer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContactInfo")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateOnly>("CreationDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("CreationTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateOnly?>("UpdatedDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("UpdatedTime")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Manufacturers", (string)null);
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.SparePart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("CreationDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("CreationTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("ManufacturerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("PartNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateOnly?>("UpdatedDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("UpdatedTime")
+                        .HasColumnType("time without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ManufacturerId");
+
+                    b.ToTable("SpareParts", (string)null);
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.Vehicle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateOnly>("CreationDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("CreationTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateOnly?>("UpdatedDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly?>("UpdatedTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<VehicleType>("VehicleType")
+                        .HasColumnType("vehicle_type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Vehicles", (string)null);
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.VehicleSparePart", b =>
+                {
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SparePartId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("VehicleId", "SparePartId");
+
+                    b.HasIndex("SparePartId");
+
+                    b.ToTable("VehicleSpareParts", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -270,6 +432,64 @@ namespace SaAn.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.SparePart", b =>
+                {
+                    b.HasOne("SaAn.Domain.Entities.Category", "Category")
+                        .WithMany("SpareParts")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SaAn.Domain.Entities.Manufacturer", "Manufacturer")
+                        .WithMany("SpareParts")
+                        .HasForeignKey("ManufacturerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Manufacturer");
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.VehicleSparePart", b =>
+                {
+                    b.HasOne("SaAn.Domain.Entities.SparePart", "SparePart")
+                        .WithMany("VehicleSpareParts")
+                        .HasForeignKey("SparePartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SaAn.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany("VehicleSpareParts")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SparePart");
+
+                    b.Navigation("Vehicle");
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.Category", b =>
+                {
+                    b.Navigation("SpareParts");
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.Manufacturer", b =>
+                {
+                    b.Navigation("SpareParts");
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.SparePart", b =>
+                {
+                    b.Navigation("VehicleSpareParts");
+                });
+
+            modelBuilder.Entity("SaAn.Domain.Entities.Vehicle", b =>
+                {
+                    b.Navigation("VehicleSpareParts");
                 });
 #pragma warning restore 612, 618
         }

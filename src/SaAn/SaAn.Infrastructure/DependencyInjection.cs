@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using SaAn.Application.Interfaces;
 using SaAn.Infrastructure.Extensions;
+using SaAn.Infrastructure.Services;
 
 namespace SaAn.Infrastructure;
 
@@ -22,6 +23,7 @@ public static class DependencyInjection
         });
         services.AddHostedService<ApplyMigrations>();
         services.AddScoped<IDbContext>(serviceProvider => serviceProvider.GetService<ApplicationDbContext>());
+        services.AddScoped<VehicleService>();
 
         return services;
     }

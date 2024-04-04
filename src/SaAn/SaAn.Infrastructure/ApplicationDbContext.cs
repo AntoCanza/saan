@@ -3,19 +3,32 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SaAn.Application.Interfaces;
 using SaAn.Domain;
+using SaAn.Domain.Enums;
 using SaAn.Domain.Interfaces;
 
 namespace SaAn.Infrastructure;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IDbContext
 {
-    public const string DefaultSchema = "dbo";
-
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
 
+    public override int SaveChanges()
+    {
+        ParseData();
+
+        return base.SaveChanges();
+    }
+
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ParseData();
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ParseData()
     {
         DateTime dateTime = DateTime.UtcNow;
 
@@ -39,12 +52,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IDbConte
         {
             entry.Entity.SetLowerCaseField();
         }
-
-        return base.SaveChangesAsync(cancellationToken);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasPostgresEnum<VehicleType>();
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         base.OnModelCreating(modelBuilder);
