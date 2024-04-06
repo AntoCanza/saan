@@ -16,32 +16,32 @@
     networks:
       - antoniocnz-network
 
-  saan.web:
-    image: antoniocanza/saan.web
-    container_name: saan.web.antoniocnz.com
-    restart: on-failure
-    depends_on:
-      - saan.db
-    environment:
-      TZ: "Europe/Berlin"
-      ASPNETCORE_URLS: "https://+:5002"
-      ASPNETCORE_HTTPS_PORT: "5002"
-      Kestrel__Certificates__Default__Path: "/mnt/cert/certificate.pfx"
-      Kestrel__Certificates__Default__Password: "certificate"
-    ports:
-      - "5002:5002"
-    volumes:
-      - ./cert:/mnt/cert:ro
-    healthcheck:
-      test: [ "CMD", "wget", "-O ready", "https://localhost" ]
-      interval: 1s
-      timeout: 3s
-      retries: 15
-    build:
-      context: ../
-      dockerfile: src/SaAn/SaAn.Web.Blazor/Dockerfile
-    networks:
-      - antoniocnz-network
+  #saan.web:
+  #  image: antoniocanza/saan.web
+  #  container_name: saan.web.antoniocnz.com
+  #  restart: on-failure
+  #  depends_on:
+  #    - saan.db
+  #  environment:
+  #    TZ: "Europe/Berlin"
+  #    ASPNETCORE_URLS: "https://+:5002"
+  #    ASPNETCORE_HTTPS_PORT: "5002"
+  #    Kestrel__Certificates__Default__Path: "/mnt/cert/certificate.pfx"
+  #    Kestrel__Certificates__Default__Password: "certificate"
+  #  ports:
+  #    - "5002:5002"
+  #  volumes:
+  #    - ./cert:/mnt/cert:ro
+  #  healthcheck:
+  #    test: [ "CMD", "wget", "-O ready", "https://localhost" ]
+  #    interval: 1s
+  #    timeout: 3s
+  #    retries: 15
+  #  build:
+  #    context: ../
+  #    dockerfile: src/SaAn/SaAn.Web.Blazor/Dockerfile
+  #  networks:
+  #    - antoniocnz-network
 
 volumes:
   saan.db.data:
