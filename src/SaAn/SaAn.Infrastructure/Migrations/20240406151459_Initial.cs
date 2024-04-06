@@ -95,6 +95,8 @@ namespace SaAn.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Model = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Brand = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    ModelLowerCase = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    BrandLowerCase = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     VehicleType = table.Column<VehicleType>(type: "vehicle_type", nullable: false),
                     CreationDate = table.Column<DateOnly>(type: "date", nullable: false),
                     CreationTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),

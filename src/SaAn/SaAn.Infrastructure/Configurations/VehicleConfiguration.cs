@@ -14,6 +14,8 @@ public class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
 
         builder.Property(v => v.Model).IsRequired().HasMaxLength(150);
         builder.Property(v => v.Brand).IsRequired().HasMaxLength(150);
+        builder.Property(v => v.ModelLowerCase).IsRequired().HasMaxLength(150);
+        builder.Property(v => v.BrandLowerCase).IsRequired().HasMaxLength(150);
         builder.Property(v => v.VehicleType).IsRequired();
     }
 }

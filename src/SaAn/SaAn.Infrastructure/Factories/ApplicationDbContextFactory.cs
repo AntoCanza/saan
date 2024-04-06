@@ -5,7 +5,7 @@ using SaAn.Infrastructure.Extensions;
 
 namespace SaAn.Infrastructure.Factories;
 
-public class SlideImageDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
+public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {

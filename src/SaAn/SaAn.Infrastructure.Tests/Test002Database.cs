@@ -24,7 +24,8 @@ internal class Test002Database
         var services = new ServiceCollection();
 
         services.AddInfrastructure(
-            "Server=195.201.125.202;Port=54322;Database=saan;Username=saan_user;Password='saan';IncludeErrorDetail=true");
+            //"Server=195.201.125.202;Port=54322;Database=saan;Username=saan_user;Password='saan';IncludeErrorDetail=true");
+            "Server=localhost;Port=54322;Database=saan;Username=saan_user;Password='saan';IncludeErrorDetail=true");
 
         _serviceProvider = services.BuildServiceProvider(true);
 

@@ -340,6 +340,11 @@ namespace SaAn.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<string>("BrandLowerCase")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
                     b.Property<DateOnly>("CreationDate")
                         .HasColumnType("date");
 
@@ -347,6 +352,11 @@ namespace SaAn.Infrastructure.Migrations
                         .HasColumnType("time without time zone");
 
                     b.Property<string>("Model")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("ModelLowerCase")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
