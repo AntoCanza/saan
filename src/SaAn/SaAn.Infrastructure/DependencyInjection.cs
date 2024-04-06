@@ -2,8 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using SaAn.Application;
 using SaAn.Application.Interfaces;
 using SaAn.Infrastructure.Extensions;
+using SaAn.Infrastructure.MappingProfile;
 using SaAn.Infrastructure.Services;
 
 namespace SaAn.Infrastructure;
@@ -12,6 +14,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, string connectionString)
     {
+        services.AddApplication();
+
+        services.AddAutoMapper(typeof(EntityProfile).GetTypeInfo().Assembly);
+
         string dbContextAssemblyName = typeof(ApplicationDbContext).GetTypeInfo().Assembly.GetName().Name;
         NpgsqlDataSource source = new NpgsqlDataSourceBuilder(connectionString).MapEnums().Build();
 

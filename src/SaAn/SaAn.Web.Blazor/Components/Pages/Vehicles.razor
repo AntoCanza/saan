@@ -1,49 +1,90 @@
 ﻿@page "/vehicles"
 @rendermode InteractiveServer
 @inject VehicleService VehicleService
-@using SaAn.Domain.Entities
+@using SaAn.Infrastructure.Dtos
 @using SaAn.Infrastructure.Services
 @using System.Timers
 @implements IDisposable
 
-<div>
-    <input type="text" @oninput="OnSearchTermChanged" placeholder="Search by model or brand..."/>
-</div>
-
-@if (vehicles != null)
-{
-    <div style="display: flex;">
-        <div style="flex: 1; padding-right: 20px;">
-            <h4>Vehicles</h4>
-            @foreach (var vehicle in vehicles)
-            {
-                <button @onclick="() => SelectVehicle(vehicle)" style="width: 100%; text-align: left;">
-                    @vehicle.Model (@vehicle.Brand)
-                </button>
-            }
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <input type="text" class="form-control" @oninput="OnSearchTermChanged" placeholder="Search by model or brand..."/>
         </div>
-        <div style="flex: 2;">
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <h4>Vehicles</h4>
+            <div class="list-group">
+                @foreach (var vehicle in vehicles)
+                {
+                    var vehicleClass = vehicle.Id == selectedVehicle?.Id ? "list-group-item list-group-item-action bg-primary text-white" : "list-group-item list-group-item-action";
+                    <button @onclick="() => SelectVehicle(vehicle)" class="@vehicleClass">
+                        @vehicle.Model (@vehicle.Brand)
+                    </button>
+                }
+            </div>
+        </div>
+        <div class="col-md-4">
             <h4>Spare Parts</h4>
             @if (selectedVehicle != null)
             {
-                <ul>
-                    @foreach (var sparePart in selectedVehicle.VehicleSpareParts.Select(vsp => vsp.SparePart))
+                <div class="list-group">
+                    @foreach (var sparePart in spareParts)
                     {
-                        <li>@sparePart.Name - @sparePart.Description</li>
+                        var sparePartClass = sparePart.Id == selectedSparePart?.Id ? "list-group-item list-group-item-action bg-primary text-white" : "list-group-item list-group-item-action";
+                        <button @onclick="() => SelectSparePart(sparePart)" class="@sparePartClass">
+                            @sparePart.Name - @sparePart.PartNumber
+                        </button>
                     }
-                </ul>
+                </div>
             }
             else
             {
                 <p>Select a vehicle to see spare parts.</p>
             }
         </div>
+        <div class="col-md-4" style="position: -webkit-sticky; position: sticky; top: 5%; max-height: 100vh; overflow-y: auto;">
+            @if (selectedVehicle != null)
+            {
+                <h4>Vehicles Details</h4>
+                <div>
+                    <p>
+                        <strong>Brand:</strong> @selectedVehicle.Brand
+                    </p>
+                    <p>
+                        <strong>Model:</strong> @selectedVehicle.Model
+                    </p>
+                    <p>
+                        <strong>Vehicle Type:</strong> @selectedVehicle.VehicleType
+                    </p>
+                </div>
+            }
+            @if (selectedSparePart != null)
+            {
+                <h4>Spare Part Details</h4>
+                <div>
+                    <p>
+                        <strong>Name:</strong> @selectedSparePart.Name
+                    </p>
+                    <p>
+                        <strong>Part Number:</strong> @selectedSparePart.PartNumber
+                    </p>
+                    <p>
+                        <strong>Description:</strong> @selectedSparePart.Description
+                    </p>
+                </div>
+            }
+        </div>
     </div>
-}
+</div>
 
 @code {
-    private List<Vehicle>? vehicles;
-    private Vehicle? selectedVehicle;
+    private List<VehicleDto>? vehicles = new();
+    private VehicleDto? selectedVehicle;
+    private List<SparePartDto>? spareParts = new();
+    private SparePartDto? selectedSparePart;
     private string searchTerm = string.Empty;
     private Timer? debounceTimer;
 
@@ -66,6 +107,7 @@
             await InvokeAsync(async () =>
             {
                 selectedVehicle = null;
+                selectedSparePart = null; // Reset selected spare part
                 await Search();
             });
         };
@@ -86,9 +128,18 @@
         StateHasChanged();
     }
 
-    private void SelectVehicle(Vehicle vehicle)
+    private async Task SelectVehicle(VehicleDto vehicle)
     {
-        selectedVehicle = vehicle == selectedVehicle ? null : vehicle;
+        spareParts = await VehicleService.SearchSparePartsByVehicle(vehicle);
+        selectedVehicle = await VehicleService.GetVehicleById(vehicle.Id);
+        selectedSparePart = null;
+
+        StateHasChanged();
+    }
+
+    private async Task SelectSparePart(SparePartDto sparePart)
+    {
+        selectedSparePart = await VehicleService.GetSparePartById(sparePart.Id);
         StateHasChanged();
     }
 

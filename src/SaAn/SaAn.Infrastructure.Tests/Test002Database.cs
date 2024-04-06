@@ -101,7 +101,7 @@ internal class Test002Database
             .RuleFor(v => v.Brand, f => f.Vehicle.Manufacturer())
             .RuleFor(v => v.VehicleType, f => f.PickRandom<VehicleType>());
 
-        _vehicles = vehicleFaker.Generate(25);
+        _vehicles = vehicleFaker.Generate(200);
 
         // Generate Spare Parts
         var sparePartFaker = new Faker<SparePart>()
@@ -112,7 +112,7 @@ internal class Test002Database
             .RuleFor(sp => sp.CategoryId, f => f.PickRandom(_categories).Id)
             .RuleFor(sp => sp.ManufacturerId, f => f.PickRandom(_manufacturers).Id);
 
-        _spareParts = sparePartFaker.Generate(200);
+        _spareParts = sparePartFaker.Generate(1000);
 
         // Randomize VehicleSpareParts
         var rnd = new Random();
