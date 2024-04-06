@@ -49,8 +49,3 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
-
-.selected-item {
-    background-color: #a1c6ff; /* Bootstrap primary color */
-    color: white;
-}

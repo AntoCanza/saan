@@ -82,4 +82,13 @@ public class VehicleService(IDbContext dbContext, IMapper mapper)
 
         return mapper.Map<SparePartDto>(sparePart);
     }
+
+    public async Task<List<Guid>> GetVehicleIdsForSparePart(Guid sparePartId,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Set<VehicleSparePart>()
+            .Where(e => e.SparePartId == sparePartId)
+            .Select(e => e.VehicleId)
+            .ToListAsync(cancellationToken);
+    }
 }

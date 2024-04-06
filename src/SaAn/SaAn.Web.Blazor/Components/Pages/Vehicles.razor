@@ -14,7 +14,9 @@
             <div class="list-group">
                 @foreach (var vehicle in vehicles)
                 {
-                    var vehicleClass = vehicle.Id == selectedVehicle?.Id ? "list-group-item list-group-item-action bg-primary text-white" : "list-group-item list-group-item-action";
+                    var vehicleClass = vehicle.Id == selectedVehicle?.Id ? "list-group-item list-group-item-action bg-primary text-white" :
+                        vehiclesWithSelectedSparePart.Contains(vehicle.Id) ? "list-group-item list-group-item-action bg-info text-white" :
+                        "list-group-item list-group-item-action";
                     <button @onclick="() => SelectVehicle(vehicle)" class="@vehicleClass">
                         @vehicle.Model (@vehicle.Brand)
                     </button>
@@ -82,7 +84,8 @@
     private List<SparePartDto>? spareParts = new();
     private IEnumerable<SparePartDto> filteredSpareParts = Enumerable.Empty<SparePartDto>();
     private SparePartDto? selectedSparePart;
-    private string searchTerm = string.Empty;
+    private HashSet<Guid> vehiclesWithSelectedSparePart = new();
+    private string vehicleSearchTerm = string.Empty;
     private string sparePartSearchTerm = string.Empty;
     private Timer? debounceTimer;
 
@@ -93,7 +96,7 @@
 
     private void OnSearchTermChanged(ChangeEventArgs e)
     {
-        searchTerm = e.Value?.ToString() ?? string.Empty;
+        vehicleSearchTerm = e.Value?.ToString() ?? string.Empty;
         debounceTimer?.Stop();
         debounceTimer?.Dispose();
 
@@ -102,21 +105,16 @@
         {
             debounceTimer?.Stop();
             // Execute search on the UI thread
-            await InvokeAsync(async () =>
-            {
-                selectedVehicle = null;
-                selectedSparePart = null;
-                await Search();
-            });
+            await InvokeAsync(async () => { await Search(); });
         };
         debounceTimer.Start();
     }
 
     private async Task Search()
     {
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        if (!string.IsNullOrWhiteSpace(vehicleSearchTerm))
         {
-            vehicles = await VehicleService.SearchVehicles(searchTerm);
+            vehicles = await VehicleService.SearchVehicles(vehicleSearchTerm);
         }
         else
         {
@@ -132,17 +130,8 @@
         selectedVehicle = await VehicleService.GetVehicleById(vehicle.Id);
         filteredSpareParts = spareParts;
         selectedSparePart = null;
-
-        StateHasChanged();
-    }
-
-    private void OnSparePartSearchTermChanged(ChangeEventArgs e)
-    {
-        sparePartSearchTerm = e.Value?.ToString() ?? string.Empty;
-        filteredSpareParts = string.IsNullOrWhiteSpace(sparePartSearchTerm)
-            ? spareParts
-            : spareParts.Where(sp => sp.Name.Contains(sparePartSearchTerm, StringComparison.OrdinalIgnoreCase)
-                                     || sp.PartNumber.Contains(sparePartSearchTerm, StringComparison.OrdinalIgnoreCase));
+        vehiclesWithSelectedSparePart.Clear();
+        FilterSparePartsBySearchTerm();
 
         StateHasChanged();
     }
@@ -150,7 +139,26 @@
     private async Task SelectSparePart(SparePartDto sparePart)
     {
         selectedSparePart = await VehicleService.GetSparePartById(sparePart.Id);
+        List<Guid> vehicleIds = await VehicleService.GetVehicleIdsForSparePart(sparePart.Id);
+        vehiclesWithSelectedSparePart = [..vehicleIds];
+
         StateHasChanged();
+    }
+
+    private void OnSparePartSearchTermChanged(ChangeEventArgs e)
+    {
+        sparePartSearchTerm = e.Value?.ToString() ?? string.Empty;
+        FilterSparePartsBySearchTerm();
+
+        StateHasChanged();
+    }
+
+    private void FilterSparePartsBySearchTerm()
+    {
+        filteredSpareParts = string.IsNullOrWhiteSpace(sparePartSearchTerm)
+            ? spareParts
+            : spareParts.Where(sp => sp.Name.Contains(sparePartSearchTerm, StringComparison.OrdinalIgnoreCase)
+                                     || sp.PartNumber.Contains(sparePartSearchTerm, StringComparison.OrdinalIgnoreCase));
     }
 
     public void Dispose()
